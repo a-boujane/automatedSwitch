@@ -3,6 +3,6 @@
 #Navigate to my GIT directory and launch the python script and then go back to  root
 
 cd /
-cd home/pi/AutomaticSwitch
+cd home/pi/AutomatedSwitch
 sudo python pyth.py
 cd /
