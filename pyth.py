@@ -1,3 +1,6 @@
+##This is going to be a multithreaded version of the switch relay to run a
+##counter that is going to be reset everytime motion==1. 
+#Only at the end of the counter we are going to turn off the light
 #!/usr/bin/python
 
 import RPi.GPIO as GPIO
