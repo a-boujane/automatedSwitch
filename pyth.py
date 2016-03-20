@@ -5,7 +5,7 @@
 
 import RPi.GPIO as GPIO
 import time
-sensor = 4
+sensor = 18
 relay = 17
 
 GPIO.setmode(GPIO.BCM)
