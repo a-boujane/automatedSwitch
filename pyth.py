@@ -6,9 +6,9 @@ import time
 import logging
 
 #Selecting the GPIO for the sensor and the relay
-sensor = 4
+sensor = 18
 relay = 17
-
+GPIO.cleanup()
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(sensor,GPIO.IN,GPIO.PUD_DOWN)
 n=25
@@ -26,8 +26,9 @@ try:
       previous_state=current_state
       n=n+1
       if n==20:
-         logging.debug ('LOW - n==20, Cleaning up the relay')
-         GPIO.cleanup(relay)
+         #logging.debug ('LOW - n==20, Cleaning up the relay')
+        print "n==2, cleaning up relay" 
+	GPIO.cleanup(relay)
       if n==100:
          n=30
       current_state=GPIO.input(sensor)
@@ -36,8 +37,8 @@ try:
          print (new_state)
          while current_state:
             GPIO.setup(relay,GPIO.OUT)
-            logging.debug ("let's leave it on for 15 minutes")
-            time.sleep(900)
+            print "let's leave it on for 5 minutes"
+            time.sleep(300)
             current_state=GPIO.input(sensor)
             n=0
 except KeyboardInterrupt:
