@@ -18,42 +18,38 @@ def initialSetup ():
         GPIO.cleanup
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(sensor,GPIO.IN,GPIO.PUD_DOWN)
-        
 
 def ifMotionThenResetTimer(Q):
         tt=int(time.time())
-        try:
-                while True:             
-                        motion = GPIO.input(sensor)
-                        if motion:
-                                tt=int(time.time())
-                                print "motion detected! reset t0 to ", tt
-                                Q.put(tt)
-        except KeyboardInterrupt:
-                GPIO.cleanup()
+        while True:             
+                motion = GPIO.input(sensor)
+                time.sleep(0.1)
+                if motion and Q.empty():
+                        tt=int(time.time())
+                        print "motion detected! reset t0 to ", tt
+                        Q.put(tt)
+                        time.sleep(2)
                 
 
 def ifTimerThenTurnOnOrOff(Q):
         alreadyOn=False
         
         tt=int(time.time())
-        try:
-                while True:
-                        if not Q.empty():
-                                tt=Q.get()
-                        t=int(time.time())
-                        delta = t-tt
-                        print delta
-                        if delta<10 and not alreadyOn:
-                                print "if t-t0<10 and not alreadyOn:"
-                                turnOn()
-                                alreadyOn=True
-                        elif delta>=10 and alreadyOn:
-                                print "elif t-t0>=10 and not alreadyOn:"
-                                turnOff()
-                                alreadyOn=False
-        except KeyboardInterrupt:
-                GPIO.cleanup()
+        while True:
+                time.sleep(0.1)
+                if not Q.empty():
+                        tt=Q.get()
+                t=int(time.time())
+                delta = t-tt
+                print delta
+                if delta<300 and not alreadyOn:
+                        print "if t-t0<300 and not alreadyOn:"
+                        turnOn()
+                        alreadyOn=True
+                elif delta>=300 and alreadyOn:
+                        print "elif t-t0>=300 and not alreadyOn:"
+                        turnOff()
+                        alreadyOn=False
 
 def turnOn():
         print "entered turnOn()"
