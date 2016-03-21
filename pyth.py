@@ -21,27 +21,27 @@ def initialSetup ():
 	
 
 def ifMotionThenResetTimer(Q):
-	t0=time.time()
+	tt=int(time.time())
 	while True:		
 		motion = GPIO.input(sensor)
 		if motion:
-			t0=time.time()
-			print "motion detected! reset t0 to ", t0
-		Q.put(t0)
+			tt=int(time.time())
+			print "motion detected! reset t0 to ", tt
+		Q.put(tt)
 
 def ifTimerThenTurnOnOrOff(Q):
 	alreadyOn=False
-	t0=time.time()
+	tt=int(time.time())
 	while True:
-		t0=Q.get(t0)
-		t=time.time()
-		delta = t=t0
+		tt=Q.get(tt)
+		t=int(time.time())
+		delta = t-tt
 		print delta
-		if t-t0<10 and not alreadyOn:
+		if t-tt<10 and not alreadyOn:
 			print "if t-t0<10 and not alreadyOn:"
 			turnOn()
 			alreadyOn=True
-		elif t-t0>=10 and not alreadyOn:
+		elif t-tt>=10 and not alreadyOn:
 			print "elif t-t0>=10 and not alreadyOn:"
 			turnOff()
 			alreadyOff=False
