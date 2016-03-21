@@ -5,35 +5,61 @@
 
 import RPi.GPIO as GPIO
 import time
+import Queue
+import threading
+global sensor
 sensor = 18
-relay = 17
+global relay
+relay= 17
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(sensor,GPIO.IN,GPIO.PUD_DOWN)
-n=25
-previous_state = False
-current_state = False
+
+
+def initialSetup ():
+	GPIO.setmode(GPIO.BCM)
+	GPIO.setup(sensor,GPIO.IN,GPIO.PUD_DOWN)
+	
+
+def ifMotionThenResetTimer(Q):
+	while True:		
+		motion = GPIO.input(sensor)
+		if motion:
+			t0=time.time()
+		Q.put(t0)
+
+def ifTimerThenTurnOnOrOff(Q):
+	alreadyOn=False
+	t0=time.time()
+	while True:
+		t0=Q.get(t0)
+		t=time.time()
+		if t-t0<10 and not alreadyOn:
+			turnOn()
+			alreadyOn=True
+		elif t-t0>=10:
+			turnOff()
+			alreadyOff=False
+
+def turnOn():
+	print "entered turnOn()"
+	print "going HIGH now"
+	GPIO.setup(relay,GPIO.out)
+
+def turnOff():
+	print "Entered turnOff()"
+	print "Going LOW now"
+	GPIO.cleanup(relay)
+
+initialSetup()
+Q=Queue.Queue()
+
 try:
-   while True:
-      time.sleep(0.1)
-      previous_state=current_state
-      n=n+1
-      if n==20:
-         print "LOW"
-         GPIO.cleanup(relay)
-      if n==100:
-         n=30
-      current_state=GPIO.input(sensor)
-      if current_state != previous_state :
-         new_state = "HIGH" if current_state else "LOW"
-         print (new_state)
-         while current_state:
-            GPIO.setup(relay,GPIO.OUT)
-            print ("let's leave it on for 120 seconds")
-            time.sleep(120)
-            current_state=GPIO.input(sensor)
-            n=0
+	Thread1=threading.Thread(target=ifMotionThenResetTimer, args=(Q,))
+	Thread2=threading.Thread(target=ifTimerThenTurnOnOrOff, args=(Q,))
+	print "Starting Thread1, then Thread2"
+	Thread1.start()
+	Thread2.start()
 except KeyboardInterrupt:
-    GPIO.cleanup()
-      
-
+	Thread1.stop()
+	Thread2.stop()
+	GPIO.cleanup()
+	
