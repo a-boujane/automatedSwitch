@@ -15,15 +15,18 @@ relay= 17
 
 
 def initialSetup ():
+	GPIO.cleanup
 	GPIO.setmode(GPIO.BCM)
 	GPIO.setup(sensor,GPIO.IN,GPIO.PUD_DOWN)
 	
 
 def ifMotionThenResetTimer(Q):
+	t0=time.time()
 	while True:		
 		motion = GPIO.input(sensor)
 		if motion:
 			t0=time.time()
+			print "motion detected! reset t0 to ", t0
 		Q.put(t0)
 
 def ifTimerThenTurnOnOrOff(Q):
@@ -32,17 +35,21 @@ def ifTimerThenTurnOnOrOff(Q):
 	while True:
 		t0=Q.get(t0)
 		t=time.time()
+		delta = t=t0
+		print delta
 		if t-t0<10 and not alreadyOn:
+			print "if t-t0<10 and not alreadyOn:"
 			turnOn()
 			alreadyOn=True
-		elif t-t0>=10:
+		elif t-t0>=10 and not alreadyOn:
+			print "elif t-t0>=10 and not alreadyOn:"
 			turnOff()
 			alreadyOff=False
 
 def turnOn():
 	print "entered turnOn()"
 	print "going HIGH now"
-	GPIO.setup(relay,GPIO.out)
+	GPIO.setup(relay,GPIO.OUT)
 
 def turnOff():
 	print "Entered turnOff()"
