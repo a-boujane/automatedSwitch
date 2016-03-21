@@ -18,7 +18,6 @@ def initialSetup ():
         GPIO.cleanup
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(sensor,GPIO.IN,GPIO.PUD_DOWN)
-        
 
 def ifMotionThenResetTimer(Q):
         tt=int(time.time())
@@ -31,13 +30,12 @@ def ifMotionThenResetTimer(Q):
                         Q.put(tt)
                         time.sleep(2)
 
-                
-
 def ifTimerThenTurnOnOrOff(Q):
         alreadyOn=False
         
         tt=int(time.time())
         while True:
+                time.sleep(0.1)
                 if not Q.empty():
                         tt=Q.get()
                 t=int(time.time())
@@ -53,7 +51,7 @@ def ifTimerThenTurnOnOrOff(Q):
                         alreadyOn=False
                 time.sleep(0.1)
                 
-
+               
 def turnOn():
         print "entered turnOn()"
         print "going HIGH now"
