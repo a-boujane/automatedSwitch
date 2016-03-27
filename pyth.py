@@ -5,6 +5,7 @@
 
 import RPi.GPIO as GPIO
 import time
+from datetime import datetime as dt
 import Queue
 import threading
 global sensor
@@ -26,7 +27,7 @@ def ifMotionThenResetTimer(Q):
                 time.sleep(0.1)
                 if motion and Q.empty():
                         tt=int(time.time())
-                        print "motion detected! reset t0 to ", tt
+                        print now()" -- motion detected!"
                         Q.put(tt)
                         time.sleep(2)
 
@@ -40,12 +41,12 @@ def ifTimerThenTurnOnOrOff(Q):
                         tt=Q.get()
                 t=int(time.time())
                 delta = t-tt
-                print delta
-                if delta<10 and not alreadyOn:
+                #print delta
+                if delta<300 and not alreadyOn:
                         print "if t-t0<10 and not alreadyOn:"
                         turnOn()
                         alreadyOn=True
-                elif delta>=10 and alreadyOn:
+                elif delta>=300 and alreadyOn:
                         print "elif t-t0>=10 and not alreadyOn:"
                         turnOff()
                         alreadyOn=False
@@ -61,6 +62,9 @@ def turnOff():
         print "Entered turnOff()"
         print "Going LOW now"
         GPIO.cleanup(relay)
+
+def now():
+	return dt.now().strftime("%A %B, %d %Y, %H:%M:%S")
 
 initialSetup()
 Q=Queue.Queue()
