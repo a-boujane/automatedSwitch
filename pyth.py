@@ -1,47 +1,82 @@
+##This is going to be a multithreaded version of the switch relay to run a
+##counter that is going to be reset everytime motion==1. 
+#Only at the end of the counter we are going to turn off the light
 #!/usr/bin/python
 
 import RPi.GPIO as GPIO
 import time
-#import datetime
-import logging
 
-#Selecting the GPIO for the sensor and the relay
-sensor = 18
-relay = 17
-GPIO.cleanup()
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(sensor,GPIO.IN,GPIO.PUD_DOWN)
-n=25
-previous_state = False
-current_state = False
-
+#import logging
 #initializing the LOG file name
-LOG_FILENAME='/home/pi/logs/AutomatedSwitch.log'
-
-logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
-
-try:
-   while True:
-      time.sleep(0.1)
-      previous_state=current_state
-      n=n+1
-      if n==20:
+#LOG_FILENAME='/home/pi/logs/AutomatedSwitch.log'
+#logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG
          #logging.debug ('LOW - n==20, Cleaning up the relay')
-        print "n==2, cleaning up relay" 
-	GPIO.cleanup(relay)
-      if n==100:
-         n=30
-      current_state=GPIO.input(sensor)
-      if current_state != previous_state :
-         new_state = "HIGH" if current_state else "LOW"
-         print (new_state)
-         while current_state:
-            GPIO.setup(relay,GPIO.OUT)
-            print "let's leave it on for 5 minutes"
-            time.sleep(300)
-            current_state=GPIO.input(sensor)
-            n=0
-except KeyboardInterrupt:
-    GPIO.cleanup()
-      
 
+from datetime import datetime as dt
+import Queue
+import threading
+global sensor
+sensor = 18
+global relay
+relay= 17
+
+
+
+def initialSetup ():
+        GPIO.cleanup
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(sensor,GPIO.IN,GPIO.PUD_DOWN)
+
+def ifMotionThenResetTimer(Q):
+        tt=int(time.time())
+        while True:             
+                motion = GPIO.input(sensor)
+                time.sleep(0.1)
+                if motion and Q.empty():
+                        tt=int(time.time())
+                        print now()" -- motion detected!"
+                        Q.put(tt)
+                        time.sleep(2)
+
+def ifTimerThenTurnOnOrOff(Q):
+        alreadyOn=False
+        
+        tt=int(time.time())
+        while True:
+                time.sleep(0.1)
+                if not Q.empty():
+                        tt=Q.get()
+                t=int(time.time())
+                delta = t-tt
+                if delta<300 and not alreadyOn:
+                        turnOn()
+                        alreadyOn=True
+                elif delta>=300 and alreadyOn:
+                        turnOff()
+                        alreadyOn=False
+                time.sleep(0.1)
+                
+               
+def turnOn():
+        print "entered turnOn()"
+        print "going HIGH now"
+        GPIO.setup(relay,GPIO.OUT)
+
+def turnOff():
+        print "Entered turnOff()"
+        print "Going LOW now"
+        GPIO.cleanup(relay)
+
+def now():
+	return dt.now().strftime("%A %B, %d %Y, %H:%M:%S")
+
+initialSetup()
+Q=Queue.Queue()
+
+Thread1=threading.Thread(target=ifMotionThenResetTimer, args=(Q,))
+Thread2=threading.Thread(target=ifTimerThenTurnOnOrOff, args=(Q,))
+print "Starting Thread1, then Thread2"
+Thread1.start()
+Thread2.start()
+
+        
